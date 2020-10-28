@@ -47,6 +47,15 @@ namespace WebApp
             });
             services.AddDbContextPostgresTenantProvider();
 
+            services.AddDbContext<AppEntityCoreContext>(options => {
+                var connectionString = Configuration["PostgresOptions:ConnectionString"];
+                options.UseNpgsql(connectionString);
+                options.UseLazyLoadingProxies();
+            });
+            services.AddScoped<IAppEntityCoreContext, AppEntityCoreContext>();
+            
+
+
             services.AddControllers();
             IMvcBuilder builder = services.AddRazorPages();
             if (HostEnvironment.IsDevelopment())

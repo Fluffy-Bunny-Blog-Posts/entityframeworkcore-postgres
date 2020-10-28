@@ -12,6 +12,21 @@
     <div class="col-md-4">
         <section>
             <form id="state" method="post">
+                <h4>Ensure App Context .</h4>
+                <hr />
+ 
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" asp-page-handler="EnsureAppContext" value="EnsureAppContext">EnsureAppContext</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form id="state" method="post">
                 <h4>Set Tenant Context.</h4>
                 <hr />
                 <div asp-validation-summary="All" class="text-danger"></div>
@@ -28,4 +43,3 @@
         </section>
     </div>
 </div>
-

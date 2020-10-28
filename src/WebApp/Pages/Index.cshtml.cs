@@ -15,6 +15,7 @@ namespace WebApp.Pages
     {
         private string GuidS => Guid.NewGuid().ToString();
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAppEntityCoreContext _appEntityCoreContext;
         private readonly ITenantAwareDbContextAccessor _tenantAwareDbContextAccessor;
         private readonly ILogger<IndexModel> _logger;
         
@@ -30,10 +31,12 @@ namespace WebApp.Pages
 
         public IndexModel(
             IHttpContextAccessor httpContextAccessor,
+            IAppEntityCoreContext appEntityCoreContext,
             ITenantAwareDbContextAccessor tenantAwareDbContextAccessor,
             ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
+            _appEntityCoreContext = appEntityCoreContext;
             _tenantAwareDbContextAccessor = tenantAwareDbContextAccessor;
             _logger = logger;
         }
@@ -42,6 +45,34 @@ namespace WebApp.Pages
         {
 
         }
+        public async Task<IActionResult> OnPostEnsureAppContextAsync()
+        {
+            var utcNow = DateTime.UtcNow;
+
+
+            var dbContext = _appEntityCoreContext.DbContext;
+            var dbExists = await _appEntityCoreContext.DbContext.Database.CanConnectAsync();
+            if (!dbExists)
+            {
+                // do stuff
+                await dbContext.Database.MigrateAsync();
+                _appEntityCoreContext.States.Add(new Models.State
+                {
+                    Id = GuidS,
+                    Created = utcNow,
+                    Updated = utcNow,
+                    Name = "New California",
+                    Abbreviation = "NCA"
+                });
+                await _appEntityCoreContext.SaveChangesAsync();
+            }
+            var stat = from s in _appEntityCoreContext.States
+                           select s;
+            
+            return RedirectToPage("./Index");
+        }
+
+            
         public async Task<IActionResult> OnPostSetTenantAsync()
         {
             var utcNow = DateTime.UtcNow;
