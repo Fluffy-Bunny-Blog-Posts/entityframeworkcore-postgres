@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "angelo123"
+    ports:
+     - "5432:5432"
+    volumes:
+     - data-postgresql:/var/lib/postgresql/data
+    networks:
+     - postgresql
+ 
+  pgadmin4:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "angelo@osradar.com"
+      PGADMIN_DEFAULT_PASSWORD: "angelo123"
+    ports:
+     - "8034:80"
+    depends_on:
+     - db
+    networks:
+     - postgresql
+
+networks:
+  postgresql:
+       driver: bridge
+
+volumes:
+  data-postgresql:
+    external: true
