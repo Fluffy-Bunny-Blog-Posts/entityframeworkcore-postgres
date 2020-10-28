@@ -55,6 +55,11 @@ So that I could connect to the database directly in development.
 ## Entity Framework
 ### Code First
 [asp-net-core-entity-framework-core-with-postgresql-code-first](https://medium.com/faun/asp-net-core-entity-framework-core-with-postgresql-code-first-d99b909796d7) 
+```
+add-migration Initial -Context TenantAwareDbContext
+```
+The above builds the migration code, which only gets run at runtime in the task of provisioning a new Tenant.  When a new Tenant gets created a new database and all its tables get spun up, and that is only done when needed.
+
 
 ### Database First
 ```
