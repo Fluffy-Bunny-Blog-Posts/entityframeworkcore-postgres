@@ -4,6 +4,7 @@
 [deploy-postgresql-using-docker-compose](https://www.osradar.com/deploy-postgresql-using-docker-compose/)   
 
 ```
+docker volume create --name data-postgresql --driver local
 docker-compose -f docker-compose.yml up
 ```
 ### docker-compose
