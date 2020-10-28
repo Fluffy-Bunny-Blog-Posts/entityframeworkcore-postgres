@@ -8,7 +8,7 @@ docker-compose -f docker-compose.yml up
 ```
 ### docker-compose
 ```
-version: '3.4'
+version: '3.8'
 
 services:
   db:
@@ -19,7 +19,7 @@ services:
     ports:
      - "5432:5432"
     volumes:
-     - /var/postgresql/data:/var/lib/postgresql/data
+     - data-postgresql:/var/lib/postgresql/data
     networks:
      - postgresql
  
@@ -30,7 +30,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: "angelo@osradar.com"
       PGADMIN_DEFAULT_PASSWORD: "angelo123"
     ports:
-     - "80:80"
+     - "8034:80"
     depends_on:
      - db
     networks:
@@ -39,6 +39,10 @@ services:
 networks:
   postgresql:
        driver: bridge
+
+volumes:
+  data-postgresql:
+    external: true
 ```
 I had to add the following;
 ```
