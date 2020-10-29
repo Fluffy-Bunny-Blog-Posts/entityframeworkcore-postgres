@@ -1,7 +1,23 @@
 # entityframeworkcore-postgres
 
+## UseInMemoryDatabase for EntityFrameworkCore
+EntityFramework abstracts us away from the underlying database.  Sometimes we need to have an inmemory version of the underlying database, especially for unit testing during a build, and then the real one is used in production.
+
+```
+<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.8" />
+```
+```
+services.AddDbContext<ApplicationDbContext>(config =>
+{
+   config.UseInMemoryDatabase("InMemoryIdentityDatabase");
+});
+```
+Now we want to start using postgres instead.
+
 ## Install and run Postgress
 [deploy-postgresql-using-docker-compose](https://www.osradar.com/deploy-postgresql-using-docker-compose/)   
+
+
 
 ```
 docker volume create --name data-postgresql --driver local
@@ -57,7 +73,7 @@ So that I could connect to the database directly in development.
 [asp-net-core-entity-framework-core-with-postgresql-code-first](https://medium.com/faun/asp-net-core-entity-framework-core-with-postgresql-code-first-d99b909796d7) 
 ```
 add-migration Initial -Context TenantAwareDbContext
-Update-Database  (don't need to do this if you do it at runtime)
+Update-Database  (don't need to do this if you do it at runtime, and for sure not when provisioning tenant databases at runtime.)
 ```
 The above builds the migration code, which only gets run at runtime in the task of provisioning a new Tenant.  When a new Tenant gets created a new database and all its tables get spun up, and that is only done when needed.
 
