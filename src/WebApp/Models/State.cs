@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
  
 namespace WebApp.Models
 {
+    public class AppOptions
+    {
+        public bool UseInMemoryEntityFramework { get; set; }
+    }
     public class State : BaseEntity
     {
         public string Name { get; set; }

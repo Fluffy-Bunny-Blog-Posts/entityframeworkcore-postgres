@@ -1,16 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using System;
- 
+using static Microsoft.EntityFrameworkCore.EntityFrameworkCoreDelegates;
+
+
 namespace Microsoft.EntityFrameworkCore
 {
     public class TenantAwareDbContextAccessor : ITenantAwareDbContextAccessor
     {
-        public delegate void DbContextOnConfiguringOverride(
-               string tenantId,
-               DbContextOptionsBuilder builder);
-
+      
         private IServiceProvider _serviceProvider;
         private DbContextOnConfiguringOverride _dbContextOnConfiguringOverride;
 

@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+using WebApp.Models;
+using WebApp.Services;
 
 namespace WebApp
 {
@@ -34,28 +37,41 @@ namespace WebApp
             services.AddDistributedMemoryCache();
             services.AddSession();
 
+            // the raw states data, we are going to transfer this into our entity database.
+            services.Configure<List<StateModel>>(Configuration.GetSection("states"));
+
+            services.Configure<AppOptions>(Configuration.GetSection("AppOptions"));
+
+         
+            
+            services.AddDbContextTenantServices();
+
             services.AddEntityFrameworkNpgsql();
 
-            services.Configure<PostgresOptions>(Configuration.GetSection("PostgresOptions"));
-            // this is only here so that migration models can be created.
-            // we then use it as a template to not only create the new database for the tenant, but
-            // downstream using it as a normal connection.
-            services.AddDbContext<TenantAwareDbContext>(options => {
-                var connectionString = Configuration["PostgresOptions:ConnectionString"];
-                options.UseNpgsql(connectionString);
-                options.UseLazyLoadingProxies();
-            });
-            services.AddDbContextPostgresTenantProvider();
+            services.Configure<EntityFramworkConnectionOptions>(Configuration.GetSection("EntityFramworkConnectionOptions"));
 
-            services.AddDbContext<AppEntityCoreContext>(options => {
-                var connectionString = Configuration["PostgresOptions:ConnectionString"];
-                options.UseNpgsql(connectionString);
-                options.UseLazyLoadingProxies();
-            });
+            var useInMemoryEntityFramework = Configuration["AppOptions:UseInMemoryEntityFramework"];
+            if (useInMemoryEntityFramework != "True")
+            {
+                // use postgress
+                // this is only here so that migration models can be created.
+                // we then use it as a template to not only create the new database for the tenant, but
+                // downstream using it as a normal connection.
+                services.AddDbContext<TenantAwareDbContext>((serviceProvider, optionsBuilder) => PostgresDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
+                services.AddDbContext<AppEntityCoreContext>((serviceProvider, optionsBuilder) => PostgresDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
+                services.AddPostgresDbContextOverrides();
+
+            }
+            else
+            {
+                services.AddDbContext<TenantAwareDbContext>((serviceProvider, optionsBuilder) => InMemoryDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
+                services.AddDbContext<AppEntityCoreContext>((serviceProvider, optionsBuilder) => InMemoryDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
+                services.AddInMemoryDbContextOverrides();
+            }
+
             services.AddScoped<IAppEntityCoreContext, AppEntityCoreContext>();
-            
 
-
+            services.AddScoped<IGovernmentServices, EntityFrameworkGovernmentServices>();
             services.AddControllers();
             IMvcBuilder builder = services.AddRazorPages();
             if (HostEnvironment.IsDevelopment())

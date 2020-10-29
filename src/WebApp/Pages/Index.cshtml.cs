@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using WebApp.Services;
 
 namespace WebApp.Pages
 {
@@ -17,6 +18,7 @@ namespace WebApp.Pages
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAppEntityCoreContext _appEntityCoreContext;
         private readonly ITenantAwareDbContextAccessor _tenantAwareDbContextAccessor;
+        private readonly IGovernmentServices _governmentServices;
         private readonly ILogger<IndexModel> _logger;
         
         public class TenantModel
@@ -33,11 +35,13 @@ namespace WebApp.Pages
             IHttpContextAccessor httpContextAccessor,
             IAppEntityCoreContext appEntityCoreContext,
             ITenantAwareDbContextAccessor tenantAwareDbContextAccessor,
+            IGovernmentServices governmentServices,
             ILogger<IndexModel> logger)
         {
             _httpContextAccessor = httpContextAccessor;
             _appEntityCoreContext = appEntityCoreContext;
             _tenantAwareDbContextAccessor = tenantAwareDbContextAccessor;
+            _governmentServices = governmentServices;
             _logger = logger;
         }
 
@@ -56,18 +60,19 @@ namespace WebApp.Pages
             {
                 // do stuff
                 await dbContext.Database.MigrateAsync();
-                _appEntityCoreContext.States.Add(new Models.State
-                {
-                    Id = GuidS,
-                    Created = utcNow,
-                    Updated = utcNow,
-                    Name = "New California",
-                    Abbreviation = "NCA"
-                });
-                await _appEntityCoreContext.SaveChangesAsync();
             }
-            var stat = from s in _appEntityCoreContext.States
-                           select s;
+            var state = new Models.State
+            {
+                Id = GuidS,
+                Created = utcNow,
+                Updated = utcNow,
+                Name = "New California",
+                Abbreviation = "NCA"
+            };
+            await _governmentServices.AddStateAsync(state);
+            var ori = await _governmentServices.GetStateByAbbreviationAsync(state.Abbreviation);
+            await _governmentServices.DeleteStateAsync(ori.Id);
+
             
             return RedirectToPage("./Index");
         }

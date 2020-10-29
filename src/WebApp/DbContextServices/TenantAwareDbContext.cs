@@ -1,7 +1,8 @@
 ﻿
 using System.Threading.Tasks;
 using WebApp.Models;
-using static Microsoft.EntityFrameworkCore.TenantAwareDbContextAccessor;
+using static Microsoft.EntityFrameworkCore.EntityFrameworkCoreDelegates;
+ 
 
 namespace Microsoft.EntityFrameworkCore
 {
