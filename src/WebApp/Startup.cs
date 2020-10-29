@@ -48,7 +48,7 @@ namespace WebApp
 
             services.AddEntityFrameworkNpgsql();
 
-            services.Configure<EntityFramworkConnectionOptions>(Configuration.GetSection("EntityFramworkConnectionOptions"));
+            services.Configure<EntityFrameworkConnectionOptions>(Configuration.GetSection("EntityFramworkConnectionOptions"));
 
             var useInMemoryEntityFramework = Configuration["AppOptions:UseInMemoryEntityFramework"];
             if (useInMemoryEntityFramework != "True")
