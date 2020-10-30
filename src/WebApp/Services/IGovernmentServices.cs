@@ -1,5 +1,4 @@
-﻿using Castle.Core.Logging;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebApp.Models;
 
@@ -8,6 +7,8 @@ namespace WebApp.Services
     public interface IGovernmentServices
     {
         Task AddStateAsync(State state);
+        Task UpdateStateAsync(State state);
+
         Task DeleteStateAsync(string id);
         Task<State> GetStateByIdAsync(string id);
         Task<State> GetStateByAbbreviationAsync(string abbreviation);
@@ -18,5 +19,4 @@ namespace WebApp.Services
                                                       string sortField,
                                                       SortDirection sortOrder);
     }
-
 }

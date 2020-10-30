@@ -16,14 +16,14 @@ namespace WebApp.Services
             PageIndex = pageIndex;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
 
-            this.AddRange(items);
+            AddRange(items);
         }
 
         public bool HasPreviousPage
         {
             get
             {
-                return (PageIndex > 1);
+                return PageIndex > 1;
             }
         }
 
@@ -31,7 +31,7 @@ namespace WebApp.Services
         {
             get
             {
-                return (PageIndex < TotalPages);
+                return PageIndex < TotalPages;
             }
         }
 

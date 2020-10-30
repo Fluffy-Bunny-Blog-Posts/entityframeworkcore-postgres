@@ -113,5 +113,68 @@ namespace XUnitTest_InMemoryDbContext
 
             }
         }
+
+
+        [Fact]
+        public async Task CRUD_IGovernmentServices_Update_Success_Async()
+        {
+            var serviceProvider = _factory.Server.Services;
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var sp = scope.ServiceProvider;
+                var governmentServices = sp.GetRequiredService<IGovernmentServices>();
+                governmentServices.Should().NotBeNull();
+
+                var appEntityCoreContext = sp.GetRequiredService<IAppEntityCoreContext>();
+                appEntityCoreContext.Should().NotBeNull();
+
+                var dbContext = appEntityCoreContext.DbContext;
+                var dbExists = await appEntityCoreContext.DbContext.Database.CanConnectAsync();
+                dbExists.Should().BeTrue();
+
+                var utcNow = DateTime.UtcNow;
+
+                var state = new WebApp.Models.State
+                {
+                    Id = GuidS,
+                    Created = utcNow,
+                    Updated = utcNow,
+                    Name = "Old California",
+                    Abbreviation = "OCA"
+                };
+
+                Func<Task> func = async () => 
+                { 
+                    await governmentServices.AddStateAsync(state); 
+                };
+                func.Should().NotThrow();
+
+
+                var ori = await governmentServices.GetStateByAbbreviationAsync(state.Abbreviation);
+                ori.Should().NotBeNull();
+                ori.Abbreviation.Should().Be(state.Abbreviation);
+
+                ori.Name = "New Oregon";
+                ori.Abbreviation = "NOR";
+
+                func = async () =>
+                {
+                    await governmentServices.UpdateStateAsync(ori);
+                };
+                func.Should().NotThrow();
+                var ori2 = await governmentServices
+                                .GetStateByAbbreviationAsync(ori.Abbreviation);
+                ori2.Should().NotBeNull();
+                ori2.Abbreviation.Should().Be(ori.Abbreviation);
+
+
+                func = async () => { await governmentServices.DeleteStateAsync(ori2.Id); };
+                func.Should().NotThrow();
+
+                ori = await governmentServices.GetStateByAbbreviationAsync(ori2.Abbreviation);
+                ori.Should().BeNull();
+
+            }
+        }
     }
 }

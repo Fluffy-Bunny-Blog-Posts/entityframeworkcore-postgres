@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WebApp.Models;
 using System.Linq;
+using WebApp.Models;
 
 namespace WebApp.Services
 {
@@ -113,6 +113,29 @@ namespace WebApp.Services
                         where item.Name == name
                         select item;
             return query.FirstOrDefault();
+        }
+
+        public async Task UpdateStateAsync(State state)
+        {
+            var query = from item in _context.States
+                        where item.Id == state.Id
+                        select item;
+            var stateInDb = query.FirstOrDefault();
+            if(stateInDb == null)
+            {
+                await AddStateAsync(state);
+                return;
+            }
+            // now we update.
+            var utcNow = DateTime.UtcNow;
+            stateInDb.Name = state.Name;
+            stateInDb.Updated = utcNow;
+            stateInDb.Abbreviation = state.Abbreviation;
+
+            // leaving counties alone for now.
+
+            _context.States.Update(stateInDb);
+            await _context.SaveChangesAsync();
         }
     }
 
