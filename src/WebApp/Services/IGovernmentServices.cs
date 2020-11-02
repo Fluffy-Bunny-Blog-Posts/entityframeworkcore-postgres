@@ -8,7 +8,8 @@ namespace WebApp.Services
     {
         Task AddStateAsync(State state);
         Task UpdateStateAsync(State state);
-
+        Task UpsertCountyAsync(string stateAbbreviation, County county);
+        Task<List<County>> GetCounties(string stateAbbreviation);
         Task DeleteStateAsync(string id);
         Task<State> GetStateByIdAsync(string id);
         Task<State> GetStateByAbbreviationAsync(string abbreviation);

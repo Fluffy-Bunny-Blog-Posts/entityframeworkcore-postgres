@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using WebApp.Services;
 using Xunit;
 using Microsoft.Extensions.Configuration;
+using WebApp.Models;
+using System.Collections.Specialized;
+using System.Linq;
 
 namespace XUnitTest_InMemoryDbContext
 {
@@ -90,7 +93,6 @@ namespace XUnitTest_InMemoryDbContext
 
                 var state = new WebApp.Models.State
                 {
-                    Id = GuidS,
                     Created = utcNow,
                     Updated = utcNow,
                     Name = "New California",
@@ -116,7 +118,7 @@ namespace XUnitTest_InMemoryDbContext
 
 
         [Fact]
-        public async Task CRUD_IGovernmentServices_Update_Success_Async()
+        public async Task CRUD_IGovernmentServices_Update_State_Success_Async()
         {
             var serviceProvider = _factory.Server.Services;
             using (var scope = serviceProvider.CreateScope())
@@ -136,7 +138,6 @@ namespace XUnitTest_InMemoryDbContext
 
                 var state = new WebApp.Models.State
                 {
-                    Id = GuidS,
                     Created = utcNow,
                     Updated = utcNow,
                     Name = "Old California",
@@ -172,6 +173,79 @@ namespace XUnitTest_InMemoryDbContext
                 func.Should().NotThrow();
 
                 ori = await governmentServices.GetStateByAbbreviationAsync(ori2.Abbreviation);
+                ori.Should().BeNull();
+
+            }
+        }
+        [Fact]
+        public async Task CRUD_IGovernmentServices_Update_County_Success_Async()
+        {
+            var serviceProvider = _factory.Server.Services;
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var sp = scope.ServiceProvider;
+                var governmentServices = sp.GetRequiredService<IGovernmentServices>();
+                governmentServices.Should().NotBeNull();
+
+                var appEntityCoreContext = sp.GetRequiredService<IAppEntityCoreContext>();
+                appEntityCoreContext.Should().NotBeNull();
+
+                var dbContext = appEntityCoreContext.DbContext;
+                var dbExists = await appEntityCoreContext.DbContext.Database.CanConnectAsync();
+                dbExists.Should().BeTrue();
+
+                var utcNow = DateTime.UtcNow;
+
+                var state = new WebApp.Models.State
+                {
+                    Created = utcNow,
+                    Updated = utcNow,
+                    Name = "Old California",
+                    Abbreviation = "OCA"
+                };
+
+                Func<Task> func = async () =>
+                {
+                    await governmentServices.AddStateAsync(state);
+                };
+                func.Should().NotThrow();
+
+
+                var ori = await governmentServices.GetStateByAbbreviationAsync(state.Abbreviation);
+                ori.Should().NotBeNull();
+                ori.Abbreviation.Should().Be(state.Abbreviation);
+
+                var county = new County
+                {
+                    Name = "Toole"
+                };
+                func = async () =>
+                {
+                    await governmentServices.UpsertCountyAsync(ori.Abbreviation,county);
+                };
+                func.Should().NotThrow();
+                var counties = await governmentServices.GetCounties(ori.Abbreviation);
+                counties.Should().NotBeNull();
+                counties.Count.Should().Be(1);
+                var countyInDb = counties.FirstOrDefault();
+                countyInDb.Name.Should().Be(county.Name);
+                func = async () =>
+                {
+                    countyInDb.Name = "Silver Bow";
+                    await governmentServices.UpsertCountyAsync(ori.Abbreviation, countyInDb);
+                };
+                func.Should().NotThrow();
+                counties = await governmentServices.GetCounties(ori.Abbreviation);
+                counties.Should().NotBeNull();
+                counties.Count.Should().Be(1);
+                var countyInDb2 = counties.FirstOrDefault();
+                countyInDb2.Name.Should().Be(countyInDb.Name);
+
+
+                func = async () => { await governmentServices.DeleteStateAsync(ori.Id); };
+                func.Should().NotThrow();
+
+                ori = await governmentServices.GetStateByAbbreviationAsync(ori.Abbreviation);
                 ori.Should().BeNull();
 
             }

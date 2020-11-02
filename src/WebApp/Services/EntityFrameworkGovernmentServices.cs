@@ -134,8 +134,61 @@ namespace WebApp.Services
 
             // leaving counties alone for now.
 
-            _context.States.Update(stateInDb);
+        //    _context.States.Update(stateInDb);
             await _context.SaveChangesAsync();
+        }
+
+     
+        public async Task UpsertCountyAsync(string stateAbbreviation, County county)
+        {
+            var utcNow = DateTime.UtcNow;
+            var query = from item in _context.States
+                        where item.Abbreviation == stateAbbreviation
+                        select item;
+            var stateInDb = query.FirstOrDefault();
+            if (stateInDb == null)
+            {
+                throw new Exception($"State:{stateAbbreviation} does not exist");
+            }
+            var counties = new List<County>();
+            if (stateInDb.Counties == null)
+            {
+                stateInDb.Counties = counties;
+            };
+
+            var query2 = from item in stateInDb.Counties
+                        where item.Name == county.Name
+                    select item;
+            var countyInDb = query2.FirstOrDefault();
+            if(countyInDb == null)
+            {
+                county.Id = GuidS;
+                county.Created = utcNow;
+                county.Updated = utcNow;
+                stateInDb.Counties.Add(county);
+            }
+            else
+            {
+                countyInDb.Name = county.Name;
+                countyInDb.Updated = utcNow;
+            }
+            await _context.SaveChangesAsync();
+
+        }
+
+        public async Task<List<County>> GetCounties(string stateAbbreviation)
+        {
+            var query = from item in _context.States
+                        where item.Abbreviation == stateAbbreviation
+                        select item;
+            var stateInDb = query.FirstOrDefault();
+            if (stateInDb == null)
+            {
+                throw new Exception($"State:{stateAbbreviation} does not exist");
+            }
+            var query2 = from item in stateInDb.Counties
+                         select item;
+            return query2.ToList();
         }
     }
 

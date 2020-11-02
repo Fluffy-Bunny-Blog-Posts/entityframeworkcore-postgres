@@ -19,5 +19,12 @@ namespace Microsoft.EntityFrameworkCore
         {
             return await base.SaveChangesAsync();
         }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<State>()
+                .HasMany(e => e.Counties)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }
