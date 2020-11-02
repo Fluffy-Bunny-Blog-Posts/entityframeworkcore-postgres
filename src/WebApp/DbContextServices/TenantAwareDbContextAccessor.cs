@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using static Microsoft.EntityFrameworkCore.EntityFrameworkCoreDelegates;
-
+using WebApp.DbContextServices;
 
 namespace Microsoft.EntityFrameworkCore
 {
@@ -9,18 +8,18 @@ namespace Microsoft.EntityFrameworkCore
     {
       
         private IServiceProvider _serviceProvider;
-        private DbContextOnConfiguringOverride _dbContextOnConfiguringOverride;
+        private IDbContextOptionsProvider _dbContextOptionsProvider;
 
         public TenantAwareDbContextAccessor(
             IServiceProvider serviceProvider,
-            DbContextOnConfiguringOverride dbContextOnConfiguringOverride)
+            IDbContextOptionsProvider dbContextOptionsProvider)
         {
             _serviceProvider = serviceProvider;
-            _dbContextOnConfiguringOverride = dbContextOnConfiguringOverride;
+            _dbContextOptionsProvider = dbContextOptionsProvider;
         }
         public ITenantAwareDbContext GetTenantAwareDbContext(string tenantId)
         {
-            var dbContext = new TenantAwareDbContext(tenantId, _dbContextOnConfiguringOverride);
+            var dbContext = new TenantAwareDbContext(tenantId, _dbContextOptionsProvider);
             return dbContext;
         }
     }

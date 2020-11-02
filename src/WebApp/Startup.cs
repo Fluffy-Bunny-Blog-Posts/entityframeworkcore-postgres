@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using WebApp.DbContextServices;
 using WebApp.Models;
 using WebApp.Services;
 
@@ -53,21 +54,26 @@ namespace WebApp
             var useInMemoryEntityFramework = Configuration["AppOptions:UseInMemoryEntityFramework"];
             if (useInMemoryEntityFramework != "True")
             {
-                // use postgress
+                // use postgres
                 // this is only here so that migration models can be created.
                 // we then use it as a template to not only create the new database for the tenant, but
                 // downstream using it as a normal connection.
-                services.AddDbContext<TenantAwareDbContext>((serviceProvider, optionsBuilder) => PostgresDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
-                services.AddDbContext<AppEntityCoreContext>((serviceProvider, optionsBuilder) => PostgresDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
                 services.AddPostgresDbContextOverrides();
 
             }
             else
             {
-                services.AddDbContext<TenantAwareDbContext>((serviceProvider, optionsBuilder) => InMemoryDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
-                services.AddDbContext<AppEntityCoreContext>((serviceProvider, optionsBuilder) => InMemoryDelegates.DbContextConfigurationWithServiceProvider(serviceProvider, optionsBuilder));
                 services.AddInMemoryDbContextOverrides();
             }
+            services.AddDbContext<TenantAwareDbContext>((serviceProvider, optionsBuilder) => {
+                var dbContextOptionsProvider = serviceProvider.GetRequiredService<IDbContextOptionsProvider>();
+                dbContextOptionsProvider.Configure(optionsBuilder);
+            });
+            services.AddDbContext<AppEntityCoreContext>((serviceProvider, optionsBuilder) => {
+                var dbContextOptionsProvider = serviceProvider.GetRequiredService<IDbContextOptionsProvider>();
+                dbContextOptionsProvider.Configure(optionsBuilder);
+            });
+
 
             services.AddScoped<IAppEntityCoreContext, AppEntityCoreContext>();
 

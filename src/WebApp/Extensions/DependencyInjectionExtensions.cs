@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using static Microsoft.EntityFrameworkCore.TenantAwareDbContextAccessor;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using static Microsoft.EntityFrameworkCore.EntityFrameworkCoreDelegates;
+using WebApp.DbContextServices;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -16,13 +16,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddPostgresDbContextOverrides(
             this IServiceCollection services)
         {
-            services.AddSingleton<DbContextOnConfiguringOverride>(sp => PostgresDelegates.BuildDbContextOnConfiguringOverride(sp));
+            services.AddSingleton<IDbContextOptionsProvider, PostgresDbContextOptionsProvider>();
             return services;
         }
         public static IServiceCollection AddInMemoryDbContextOverrides(
            this IServiceCollection services)
         {
-            services.AddSingleton<DbContextOnConfiguringOverride>(sp => InMemoryDelegates.BuildDbContextOnConfiguringOverride(sp));
+            services.AddSingleton<IDbContextOptionsProvider, InMemoryDbContextOptionsProvider>();
             return services;
         }
         public static IServiceCollection AddDbContextTenantServices(this IServiceCollection services)

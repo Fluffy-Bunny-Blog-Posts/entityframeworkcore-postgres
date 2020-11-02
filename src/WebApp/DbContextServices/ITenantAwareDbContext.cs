@@ -6,9 +6,10 @@ namespace Microsoft.EntityFrameworkCore
 {
     public interface ITenantAwareDbContext : IDisposable
     {
-        DbSet<County> Counties { get; set; }
-        DbContext DbContext { get; }
         DbSet<State> States { get; set; }
+        DbSet<County> Counties { get; set; }
+        DbSet<City> Cities { get; set; }
+        DbContext DbContext { get; }
         Task<int> SaveChangesAsync();
     }
 }
