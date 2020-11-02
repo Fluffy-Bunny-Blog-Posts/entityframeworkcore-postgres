@@ -12,6 +12,7 @@ namespace Microsoft.EntityFrameworkCore
         public AppEntityCoreContext(DbContextOptions<AppEntityCoreContext> options) : base(options) { }
         public DbSet<State> States { get; set; }
         public DbSet<County> Counties { get; set; }
+        public DbSet<City> Cities { get; set; }
 
         public DbContext DbContext => this;
 
@@ -25,6 +26,10 @@ namespace Microsoft.EntityFrameworkCore
                 .HasMany(e => e.Counties)
                 .WithOne()
                 .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<County>()
+               .HasMany(e => e.Cities)
+               .WithOne()
+               .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

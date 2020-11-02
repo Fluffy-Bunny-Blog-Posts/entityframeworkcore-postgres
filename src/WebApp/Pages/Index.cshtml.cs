@@ -69,7 +69,7 @@ namespace WebApp.Pages
                 Name = "New California",
                 Abbreviation = "NCA"
             };
-            await _governmentServices.AddStateAsync(state);
+            await _governmentServices.UpsertStateAsync(state);
             var ori = await _governmentServices.GetStateByAbbreviationAsync(state.Abbreviation);
             await _governmentServices.DeleteStateAsync(ori.Id);
 

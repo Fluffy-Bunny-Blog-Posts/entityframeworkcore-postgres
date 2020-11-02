@@ -18,6 +18,33 @@ namespace WebApp.Migrations.AppEntityCore
                 .HasAnnotation("ProductVersion", "3.1.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            modelBuilder.Entity("WebApp.Models.City", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CountyFK")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StateFK")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Updated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountyFK");
+
+                    b.ToTable("Cities");
+                });
+
             modelBuilder.Entity("WebApp.Models.County", b =>
                 {
                     b.Property<string>("Id")
@@ -64,11 +91,20 @@ namespace WebApp.Migrations.AppEntityCore
                     b.ToTable("States");
                 });
 
+            modelBuilder.Entity("WebApp.Models.City", b =>
+                {
+                    b.HasOne("WebApp.Models.County", null)
+                        .WithMany("Cities")
+                        .HasForeignKey("CountyFK")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("WebApp.Models.County", b =>
                 {
                     b.HasOne("WebApp.Models.State", null)
                         .WithMany("Counties")
-                        .HasForeignKey("StateFK");
+                        .HasForeignKey("StateFK")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

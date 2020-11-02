@@ -6,15 +6,22 @@ namespace WebApp.Services
 {
     public interface IGovernmentServices
     {
-        Task AddStateAsync(State state);
-        Task UpdateStateAsync(State state);
-        Task UpsertCountyAsync(string stateAbbreviation, County county);
-        Task<List<County>> GetCounties(string stateAbbreviation);
-        Task DeleteStateAsync(string id);
+         
+        Task UpsertStateAsync(State state);
         Task<State> GetStateByIdAsync(string id);
         Task<State> GetStateByAbbreviationAsync(string abbreviation);
         Task<State> GetStateByNameAsync(string name);
-        Task<IEnumerable<State>> GetAllStatesAsync(SortDirection sortOrder);
+
+        Task UpsertCityAsync(string stateId, string countyId, City city);
+        Task<City> GetCityByIdAsync(string stateId, string countyId, string id);
+
+        Task UpsertCountyAsync(string stateAbbreviation, County county);
+        Task<County> GetCountyByNameAsync(string stateId, string countyName);
+        Task<List<County>> GetCountiesAsync(string stateId);
+        Task<List<City>> GetCitiesAsync(string stateId, string countyId);
+        Task DeleteStateAsync(string id);
+
+        Task<IEnumerable<State>> GetStatesAsync(SortDirection sortOrder);
         Task<PaginatedList<State>> GetPageStatesAsync(int? pageNumber,
                                                       int pageSize,
                                                       string sortField,

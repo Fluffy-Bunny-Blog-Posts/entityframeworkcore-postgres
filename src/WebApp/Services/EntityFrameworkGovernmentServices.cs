@@ -23,17 +23,36 @@ namespace WebApp.Services
             _context = context;
             _logger = logger;
         }
-        public async Task AddStateAsync(State state)
+        
+        public async Task UpsertStateAsync(State state)
         {
-            var ori = await GetStateByNameAsync(state.Name);
-            if (ori != null)
-                return;
-            state.Id = GuidS;
-            _context.States.Add(state);
+            var utcNow = DateTime.UtcNow;
+            var query = from item in _context.States
+                        where item.Name == state.Name
+                        select item;
+            var stateInDb = query.FirstOrDefault();
+            if (stateInDb == null)
+            {
+                state.Id = GuidS;
+                state.Created = utcNow;
+                state.Updated = utcNow;
+                _context.States.Add(state);
+            }
+            else
+            {
+                // now we update.
+                stateInDb.Name = state.Name;
+                stateInDb.Updated = utcNow;
+                stateInDb.Abbreviation = state.Abbreviation;
+            }
+           
+
+            // leaving counties alone for now.
+
+            //    _context.States.Update(stateInDb);
             await _context.SaveChangesAsync();
         }
 
-        
 
         public async Task DeleteStateAsync(string id)
         {
@@ -62,7 +81,7 @@ namespace WebApp.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<State>> GetAllStatesAsync(SortDirection sortOrder)
+        public async Task<IEnumerable<State>> GetStatesAsync(SortDirection sortOrder)
         {
             var states = from s in _context.States
                          select s;
@@ -115,40 +134,19 @@ namespace WebApp.Services
             return query.FirstOrDefault();
         }
 
-        public async Task UpdateStateAsync(State state)
-        {
-            var query = from item in _context.States
-                        where item.Id == state.Id
-                        select item;
-            var stateInDb = query.FirstOrDefault();
-            if(stateInDb == null)
-            {
-                await AddStateAsync(state);
-                return;
-            }
-            // now we update.
-            var utcNow = DateTime.UtcNow;
-            stateInDb.Name = state.Name;
-            stateInDb.Updated = utcNow;
-            stateInDb.Abbreviation = state.Abbreviation;
-
-            // leaving counties alone for now.
-
-        //    _context.States.Update(stateInDb);
-            await _context.SaveChangesAsync();
-        }
+       
 
      
-        public async Task UpsertCountyAsync(string stateAbbreviation, County county)
+        public async Task UpsertCountyAsync(string stateId, County county)
         {
             var utcNow = DateTime.UtcNow;
             var query = from item in _context.States
-                        where item.Abbreviation == stateAbbreviation
+                        where item.Id == stateId
                         select item;
             var stateInDb = query.FirstOrDefault();
             if (stateInDb == null)
             {
-                throw new Exception($"State:{stateAbbreviation} does not exist");
+                throw new Exception($"stateId:{stateId} does not exist");
             }
             var counties = new List<County>();
             if (stateInDb.Counties == null)
@@ -176,20 +174,103 @@ namespace WebApp.Services
 
         }
 
-        public async Task<List<County>> GetCounties(string stateAbbreviation)
+        public async Task<County> GetCountyByNameAsync(string stateId, string countyName)
+        {
+            var query = from item in _context.Counties
+                        where item.StateFK == stateId && item.Name == countyName
+                        select item;
+            var countyInDb = query.FirstOrDefault();
+            if (countyInDb == null)
+            {
+                throw new Exception($"stateId={stateId}, countyName={countyName} does not exist");
+            }
+            return countyInDb;
+        }
+        public async Task<List<County>> GetCountiesAsync(string stateId)
+        {
+            var query = from item in _context.Counties
+                        where item.StateFK == stateId
+                        select item;
+            return query.ToList();
+        }
+
+        public async Task UpsertCityAsync(string stateId, string countyId, City city)
+        {
+            var utcNow = DateTime.UtcNow;
+            var query = from item in _context.Counties
+                        where item.StateFK == stateId && item.Id == countyId
+                        select item;
+            var countyInDb = query.FirstOrDefault();
+            if (countyInDb == null)
+            {
+                throw new Exception($"stateId={stateId},countyId={countyId} does not exist");
+            }
+
+            var cities = new List<City>();
+            if (countyInDb.Cities == null)
+            {
+                countyInDb.Cities = cities;
+            };
+
+            var query3 = from item in countyInDb.Cities
+                         where item.Name == city.Name
+                         select item;
+            var cityInDb = query3.FirstOrDefault();
+            if (cityInDb == null)
+            {
+                city.Id = GuidS;
+                city.Created = utcNow;
+                city.Updated = utcNow;
+                city.StateFK = countyInDb.StateFK;
+                countyInDb.Cities.Add(city);
+            }
+            else
+            {
+                cityInDb.Name = city.Name;
+                cityInDb.Updated = utcNow;
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<City>> GetCitiesAsync(string stateId, string countyId)
         {
             var query = from item in _context.States
-                        where item.Abbreviation == stateAbbreviation
+                        where item.Id == stateId
                         select item;
             var stateInDb = query.FirstOrDefault();
             if (stateInDb == null)
             {
-                throw new Exception($"State:{stateAbbreviation} does not exist");
+                throw new Exception($"stateId:{stateId} does not exist");
             }
+
             var query2 = from item in stateInDb.Counties
+                         where item.Id == countyId
                          select item;
-            return query2.ToList();
+            var countyInDb = query2.FirstOrDefault();
+            if (countyInDb == null)
+            {
+                throw new Exception($"stateId={stateId}, countyId={countyId} does not exist");
+            }
+            if (countyInDb.Cities == null)
+            {
+                return new List<City>();
+            }
+            var query3 = from item in countyInDb.Cities
+                         select item;
+            return query3.ToList();
+
         }
+
+        public async Task<City> GetCityByIdAsync(string stateId, string countyId, string id)
+        {
+            var query = from item in _context.Cities
+                        where item.StateFK == stateId && item.CountyFK == countyId && item.Id == id
+                        select item;
+
+            var cityInDb = query.FirstOrDefault();
+            return cityInDb;
+        }
+
     }
 
 }
