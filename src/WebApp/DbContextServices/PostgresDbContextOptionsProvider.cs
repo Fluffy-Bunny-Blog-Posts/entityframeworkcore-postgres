@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace WebApp.DbContextServices
+namespace Microsoft.EntityFrameworkCore
 {
     public class PostgresDbContextOptionsProvider : IDbContextOptionsProvider
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace WebApp.DbContextServices
+namespace Microsoft.EntityFrameworkCore
 {
     public interface IDbContextOptionsProvider
     {

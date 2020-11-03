@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace WebApp.DbContextServices
+namespace Microsoft.EntityFrameworkCore
 {
     public class InMemoryDbContextOptionsProvider : IDbContextOptionsProvider
     {
